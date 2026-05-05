@@ -2,15 +2,8 @@
 {
     public class OrderResponse
     {
-        public string Status { get; set; }
-        public string Message { get; set; }
-        public string OrderId { get; set; }
-
-        public OrderResponse()
-        {
-            Status = "accepted";
-            Message = "Pedido recibido y enviado a RabbitMQ";
-            OrderId = "ORD-1001";
-        }
+        public string Status { get; set; } = "accepted";
+        public string Message { get; set; } = "Pedido recibido y enviado a RabbitMQ";
+        public string OrderId { get; set; } = string.Empty;
     }
 }

@@ -16,6 +16,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.14" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="notification-worker\**" />
+    <Compile Remove="notification-worker\**" />
+    <EmbeddedResource Remove="notification-worker\**" />
+    <None Remove="notification-worker\**" />
   </ItemGroup>
 
 </Project>
