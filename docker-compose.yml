@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  orders-api:
+    container_name: orders-api
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - ASPNETCORE_URLS=http://+:3000
