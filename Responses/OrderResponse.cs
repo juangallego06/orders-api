@@ -1,15 +1,15 @@
-﻿namespace Orders.API.Responses
+namespace Orders.API.Responses
 {
     public class OrderResponse
     {
-        public string Status { get; set; }
+        public string Status  { get; set; }
         public string Message { get; set; }
         public string OrderId { get; set; }
 
         public OrderResponse()
         {
-            Status = "accepted";
-            Message = "Pedido recibido y enviado a RabbitMQ";
+            Status  = "accepted";
+            Message = "Pedido recibido, enviado a RabbitMQ y evento OrderCreated publicado en Kafka";
             OrderId = "ORD-1001";
         }
     }

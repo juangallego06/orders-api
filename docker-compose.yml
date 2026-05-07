@@ -1,6 +1,53 @@
-version: '3.9'
+﻿version: '3.9'
 
 services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+
   orders-api:
     container_name: orders-api
     build: .
@@ -8,3 +55,44 @@ services:
       - "3000:3000"
     environment:
       - ASPNETCORE_URLS=http://+:3000
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=admin
+      - KAFKA_BROKER=kafka:9092
+      - KAFKA_TOPIC=orders.events
+    depends_on:
+      - rabbitmq
+      - kafka
+
+  inventory-consumer:
+    build: ./inventory-consumer
+    container_name: inventory-consumer
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - KAFKA_TOPIC=orders.events
+      - KAFKA_GROUP_ID=inventory-service-group
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  billing-consumer:
+    build: ./billing-consumer
+    container_name: billing-consumer
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - KAFKA_TOPIC=orders.events
+      - KAFKA_GROUP_ID=billing-service-group
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  notification-consumer:
+    build: ./notification-consumer
+    container_name: notification-consumer
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - KAFKA_TOPIC=orders.events
+      - KAFKA_GROUP_ID=notification-service-group
+    depends_on:
+      kafka:
+        condition: service_healthy
